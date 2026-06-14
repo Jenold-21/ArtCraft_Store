@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Artcraft Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="header"></div>
+<main>
+
+<section class="section">
+    <div class="form-container">
+        <h2>Sign Up</h2>
+        <div id="signup-error"></div>
+        <form id="signup-form">
+            <div class="form-group">
+                <label>Username *</label>
+                <input type="text" name="username" id="signup-username" required>
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" id="signup-email" required>
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" name="phone" id="signup-phone">
+            </div>
+            <div class="form-group">
+                <label>Password *</label>
+                <input type="password" name="password" id="signup-password" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm Password *</label>
+                <input type="password" name="confirm_password" id="signup-confirm" required>
+            </div>
+            <button type="submit" class="btn">Sign Up</button>
+            <div class="form-footer">
+                Already have an account? <a href="login.html">Login</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+</main>
+<div id="footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/script.js"></script>
+<script>
+$(document).ready(function() {
+    $('#signup-form').submit(function(e) {
+        e.preventDefault();
+        $.post('api/signup.php', {
+            username: $('#signup-username').val(),
+            email: $('#signup-email').val(),
+            phone: $('#signup-phone').val(),
+            password: $('#signup-password').val(),
+            confirm_password: $('#signup-confirm').val()
+        }, function(res) {
+            if (res.success) {
+                window.location.href = 'index.html';
+            } else {
+                $('#signup-error').html('<div class="alert alert-error">' + res.message + '</div>');
+            }
+        }, 'json');
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Artcraft Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="header"></div>
+<main>
+
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">All Products</h2>
+
+        <div class="category-filters" id="category-filters"></div>
+        <div class="products-grid" id="products-grid"></div>
+    </div>
+</section>
+
+</main>
+<div id="footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/script.js"></script>
+<script>
+function loadProducts(categoryId) {
+    var url = 'api/products.php';
+    if (categoryId && categoryId !== 'all') url += '?category=' + categoryId;
+
+    $.getJSON(url, function(products) {
+        var html = '';
+        if (products.length === 0) {
+            html = '<p style="text-align:center;grid-column:1/-1;color:#888;">No products found.</p>';
+        }
+        $.each(products, function(i, p) {
+            html += '<div class="product-card" data-category="' + (p.category_id || '') + '">' +
+                '<img src="uploads/' + p.image + '" alt="' + p.name + '" class="product-img" onerror="this.src=\'https://placehold.co/300x220?text=Art\'">' +
+                '<div class="product-info">' +
+                '<h3>' + p.name + '</h3>' +
+                '<div class="category">' + (p.category_name || 'General') + '</div>' +
+                '<div class="price">₹' + parseFloat(p.price).toFixed(2) + '</div>' +
+                '<button class="btn-add-cart" data-id="' + p.id + '">Add to Cart</button>' +
+                '</div></div>';
+        });
+        $('#products-grid').html(html);
+    });
+}
+
+$(document).ready(function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var activeCategory = urlParams.get('category') || 'all';
+
+    $.getJSON('api/categories.php', function(cats) {
+        var html = '<button class="filter-btn' + (activeCategory === 'all' ? ' active' : '') + '" data-category="all">All</button>';
+        $.each(cats, function(i, c) {
+            html += '<button class="filter-btn' + (activeCategory == c.id ? ' active' : '') + '" data-category="' + c.id + '">' + c.name + '</button>';
+        });
+        $('#category-filters').html(html);
+        loadProducts(activeCategory);
+    });
+
+    $(document).on('click', '.filter-btn', function() {
+        var cat = $(this).data('category');
+        $('.filter-btn').removeClass('active');
+        $(this).addClass('active');
+        loadProducts(cat);
+    });
+});
+</script>
+</body>
+</html>

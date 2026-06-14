@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Artcraft Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="header"></div>
+<main>
+
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Contact Us</h2>
+        <div id="contact-message"></div>
+        <div class="contact-wrapper">
+            <div class="contact-info">
+                <h2>Get in Touch</h2>
+                <p>Have a question about our products or want a custom piece? We'd love to hear from you.</p>
+                <p><i class="fas fa-map-marker-alt"></i> 10, Gandhi Street, T. Nagar, Chennai - 600017</p>
+                <p><i class="fas fa-phone"></i> +91 98765 43210</p>
+                <p><i class="fas fa-envelope"></i> info@artcraftstore.com</p>
+                <p><i class="fas fa-clock"></i> Mon - Sat: 9:00 AM - 6:00 PM</p>
+            </div>
+            <div>
+                <form id="contact-form">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" name="name" id="contact-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" id="contact-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" id="contact-phone">
+                    </div>
+                    <div class="form-group">
+                        <label>Message *</label>
+                        <textarea name="message" id="contact-message-text" required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+</main>
+<div id="footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/script.js"></script>
+<script>
+$(document).ready(function() {
+    $('#contact-form').submit(function(e) {
+        e.preventDefault();
+        $.post('api/contact.php', {
+            name: $('#contact-name').val(),
+            email: $('#contact-email').val(),
+            phone: $('#contact-phone').val(),
+            message: $('#contact-message-text').val()
+        }, function(res) {
+            var cls = res.success ? 'alert-success' : 'alert-error';
+            $('#contact-message').html('<div class="alert ' + cls + '">' + res.message + '</div>');
+            if (res.success) $('#contact-form')[0].reset();
+        }, 'json');
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging out - Artcraft Store</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8f9fa;color:#888;font-size:1.2rem;}</style>
+</head>
+<body>
+    <p>Logging out...</p>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+    $.get('api/logout.php', function() {
+        window.location.href = 'index.html';
+    });
+    </script>
+</body>
+</html>

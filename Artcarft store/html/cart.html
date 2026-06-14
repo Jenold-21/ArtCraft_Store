@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Artcraft Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .checkout-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+        .checkout-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .checkout-grid .full-width {
+            grid-column: 1 / -1;
+        }
+        #order-message { margin-bottom: 15px; }
+        .order-success {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .order-success i {
+            font-size: 3rem;
+            color: #27ae60;
+            margin-bottom: 15px;
+        }
+        .order-success h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        .order-success p { color: #888; margin-bottom: 5px; }
+        .order-success .btn { width: auto; display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="header"></div>
+<main>
+
+<section class="cart-page">
+    <div class="container">
+        <h2>Shopping Cart</h2>
+        <div id="cart-content"></div>
+        <div id="checkout-wrapper" style="display:none;"></div>
+    </div>
+</section>
+
+</main>
+<div id="footer"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/script.js"></script>
+<script>
+function loadCart() {
+    $.getJSON('api/cart.php', function(res) {
+        if (!res.success) {
+            if (res.loggedIn === false) {
+                $('#cart-content').html('<div class="cart-empty"><p>Please <a href="login.html">login</a> to view your cart.</p></div>');
+                $('#checkout-wrapper').hide();
+            } else {
+                $('#cart-content').html('<div class="cart-empty"><p>Your cart is empty.</p><a href="products.html">Continue Shopping</a></div>');
+                $('#checkout-wrapper').hide();
+            }
+            return;
+        }
+
+        var items = res.items;
+        if (items.length === 0) {
+            $('#cart-content').html('<div class="cart-empty"><p>Your cart is empty.</p><a href="products.html">Continue Shopping</a></div>');
+            $('#checkout-wrapper').hide();
+            return;
+        }
+
+        var html = '<table class="cart-table"><thead><tr><th>Product</th><th>Name</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th>Remove</th></tr></thead><tbody>';
+        $.each(items, function(i, item) {
+            var subtotal = parseFloat(item.price) * parseInt(item.quantity);
+            html += '<tr>' +
+                '<td><img src="uploads/' + item.image + '" alt="' + item.name + '" onerror="this.src=\'https://placehold.co/70x70?text=Art\'"></td>' +
+                '<td>' + item.name + '</td>' +
+                '<td>₹' + parseFloat(item.price).toFixed(2) + '</td>' +
+                '<td><input type="number" class="qty-input" data-id="' + item.cart_id + '" value="' + item.quantity + '" min="1"></td>' +
+                '<td>₹' + subtotal.toFixed(2) + '</td>' +
+                '<td><span class="remove-btn" data-id="' + item.cart_id + '">Remove</span></td>' +
+                '</tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div class="cart-total">Total: ₹' + parseFloat(res.total).toFixed(2) + '</div>';
+        $('#cart-content').html(html);
+
+        $('#checkout-wrapper').html(getCheckoutForm()).show();
+    });
+}
+
+function getCheckoutForm() {
+    return '<div class="checkout-section">' +
+        '<h3><i class="fas fa-truck"></i> Place Order</h3>' +
+        '<div id="order-message"></div>' +
+        '<form id="order-form">' +
+        '<div class="checkout-grid">' +
+        '<div class="form-group">' +
+        '<label>Full Name *</label>' +
+        '<input type="text" name="name" id="order-name" required>' +
+        '</div>' +
+        '<div class="form-group">' +
+        '<label>Phone Number *</label>' +
+        '<input type="text" name="phone" id="order-phone" required>' +
+        '</div>' +
+        '<div class="form-group full-width">' +
+        '<label>Delivery Location / Address *</label>' +
+        '<textarea name="location" id="order-location" rows="3" required></textarea>' +
+        '</div>' +
+        '</div>' +
+        '<button type="submit" class="btn" style="width:auto;"><i class="fas fa-check-circle"></i> Place Order</button>' +
+        '</form></div>';
+}
+
+$(document).ready(function() {
+    loadCart();
+
+    $(document).on('change', '.qty-input', function() {
+        var cartId = $(this).data('id');
+        var qty = $(this).val();
+        if (qty < 1) qty = 1;
+        $.post('api/cart-update.php', { cart_id: cartId, quantity: qty }, function() {
+            loadCart();
+        }, 'json');
+    });
+
+    $(document).on('click', '.remove-btn', function() {
+        if (!confirm('Remove this item from cart?')) return;
+        var cartId = $(this).data('id');
+        $.post('api/cart-update.php', { cart_id: cartId, remove: 1 }, function() {
+            loadCart();
+        }, 'json');
+    });
+
+    $(document).on('submit', '#order-form', function(e) {
+        e.preventDefault();
+        $.post('api/order.php', {
+            name: $('#order-name').val(),
+            phone: $('#order-phone').val(),
+            location: $('#order-location').val()
+        }, function(res) {
+            if (res.success) {
+                $('#checkout-wrapper').html(
+                    '<div class="checkout-section order-success">' +
+                    '<i class="fas fa-check-circle"></i>' +
+                    '<h3>Order Placed Successfully!</h3>' +
+                    '<p>Thank you for your order.</p>' +
+                    '<p>Order ID: #' + res.order_id + '</p>' +
+                    '<p>We will contact you shortly for delivery.</p>' +
+                    '<a href="products.html" class="btn">Continue Shopping</a>' +
+                    '</div>'
+                );
+                $('#cart-content').html('<div class="cart-empty"><p>Your cart is now empty.</p><a href="products.html">Continue Shopping</a></div>');
+            } else {
+                $('#order-message').html('<div class="alert alert-error">' + res.message + '</div>');
+            }
+        }, 'json');
+    });
+});
+</script>
+</body>
+</html>
